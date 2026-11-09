@@ -238,7 +238,7 @@ def skinned_mesh(label, meshset, materials, bone_names, arm_ob, collection, bind
 
 # ---------------------------------------------------------------- preview
 
-def studio_render(scene, out_dir, name):
+def studio_render(scene, out_dir, name, framing=None, percentage=100):
     world = scene.world or bpy.data.worlds.new("World")
     scene.world = world
     world.use_nodes = True
@@ -262,8 +262,15 @@ def studio_render(scene, out_dir, name):
     engines = [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items]
     scene.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in engines else "BLENDER_EEVEE_NEXT"
     scene.render.resolution_x, scene.render.resolution_y = 900, 1100
+    scene.render.resolution_percentage = percentage
     scene.view_settings.view_transform = "AgX"
-    for view, loc, yaw in (("front", (0, -6.6, 1.25), 0), ("back", (0, 6.6, 1.25), 180)):
+    views = (("front", (0, -6.6, 1.25), 0), ("back", (0, 6.6, 1.25), 180))
+    if framing:
+        (x, y, z), scale = framing
+        cam.data.type = "ORTHO"
+        cam.data.ortho_scale = scale
+        views = (("front", (x, y - 5, z), 0), ("back", (x, y + 5, z), 180))
+    for view, loc, yaw in views:
         cam.location, cam.rotation_euler = loc, (math.radians(90), 0, math.radians(yaw))
         scene.render.filepath = os.path.join(out_dir, "%s_%s.png" % (name, view))
         bpy.ops.render.render(write_still=True)
