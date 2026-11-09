@@ -9,8 +9,45 @@ import bmesh
 import bpy
 from mathutils import Matrix, Quaternion, Vector
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_fbx import studio_render
+
+def studio_render(scene, out_dir, name, framing, percentage=100):
+    """Render front and back previews with a three-point studio rig and an orthographic camera."""
+    world = scene.world or bpy.data.worlds.new("World")
+    scene.world = world
+    world.use_nodes = True
+    background = next(node for node in world.node_tree.nodes if node.type == "BACKGROUND")
+    background.inputs["Color"].default_value = (0.32, 0.36, 0.42, 1)
+    background.inputs["Strength"].default_value = 0.6
+
+    def light(label, energy, location, rotation, size, colour=(1, 1, 1)):
+        data = bpy.data.lights.new(label, "AREA")
+        data.energy, data.size, data.color = energy, size, colour
+        obj = bpy.data.objects.new(label, data)
+        obj.location, obj.rotation_euler = location, [math.radians(a) for a in rotation]
+        scene.collection.objects.link(obj)
+        return obj
+
+    lights = [light("Key", 900, (2.5, -3.5, 4.0), (50, 0, 35), 3.0, (1, 0.96, 0.9)),
+              light("Fill", 350, (-3.5, -2.5, 2.5), (65, 0, -55), 4.0, (0.85, 0.9, 1)),
+              light("Rim", 700, (0, 3.5, 3.5), (-50, 0, 180), 3.0)]
+    camera = bpy.data.objects.new("PreviewCamera", bpy.data.cameras.new("PreviewCamera"))
+    scene.collection.objects.link(camera)
+    scene.camera = camera
+    engines = [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items]
+    scene.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in engines else "BLENDER_EEVEE_NEXT"
+    scene.render.resolution_x, scene.render.resolution_y = 900, 1100
+    scene.render.resolution_percentage = percentage
+    scene.view_settings.view_transform = "AgX"
+    (x, y, z), scale = framing
+    camera.data.type = "ORTHO"
+    camera.data.ortho_scale = scale
+    for view, location, yaw in (("front", (x, y - 5, z), 0), ("back", (x, y + 5, z), 180)):
+        camera.location, camera.rotation_euler = location, (math.radians(90), 0, math.radians(yaw))
+        scene.render.filepath = str(Path(out_dir) / f"{name}_{view}.png")
+        bpy.ops.render.render(write_still=True)
+    # Keep the exported files to the character only.
+    for obj in lights + [camera]:
+        bpy.data.objects.remove(obj)
 
 
 def bind_normal(tree, shader, texture, socket="Normal"):

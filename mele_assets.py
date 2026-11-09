@@ -12,7 +12,6 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from config import _detect_blender
 from mele_characters import roster
 import mele_shader_bake as bake
 from mele_morph import GamePackages, transfer_positions
@@ -108,7 +107,10 @@ def umodel_path(override, log):
 
 
 def blender_path(override):
-    candidate = override or shutil.which("blender") or shutil.which("bforartists") or _detect_blender()
+    installed = [path for pattern in (r"Bforartists\*\bforartists.exe", r"Blender Foundation\Blender*\blender.exe")
+                 for path in sorted(Path(os.environ.get("ProgramFiles", r"C:\Program Files")).glob(pattern))]
+    candidate = (override or shutil.which("blender") or shutil.which("bforartists")
+                 or (installed[-1] if installed else None))
     if not candidate or not Path(candidate).is_file():
         raise ValueError("Blender or Bforartists was not found. Choose its executable.")
     return Path(candidate).resolve()

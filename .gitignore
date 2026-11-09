@@ -1,5 +1,4 @@
 __pycache__/
 *.pyc
-# Per-machine settings and everything extracted from the game
-config.json
+# UE Viewer is downloaded into data/ at run time
 data/

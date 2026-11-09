@@ -1,17 +1,33 @@
 """Read cooked Legendary Edition references and transfer stock face morphs."""
+import ctypes
+from dataclasses import dataclass
 from functools import lru_cache
 import json
 from mmap import ACCESS_READ, mmap
 import re
 import struct
-from dataclasses import dataclass
 
-from anthemtool.io.providers.oodle import OodleDecompressor
 from mele_shader_cache import ShaderCache, static_parameter_set
 
 PACKAGE_TAG = 0x9E2A83C1
 VERSIONS = {(684, 171), (684, 168), (685, 205)}
 EMPTY_ARRAY = b"\0" * 4
+
+
+class OodleDecompressor:
+    """Oodle block decompression through the game's own oo2core DLL."""
+
+    def __init__(self, library):
+        self.library = ctypes.CDLL(str(library))
+
+    def decompress(self, payload, size, output_size):
+        output = ctypes.create_string_buffer(output_size)
+        written = self.library.OodleLZ_Decompress(
+            ctypes.c_char_p(bytes(payload)), size, output, output_size, 0, 0, 0, None, None, None, None, None,
+            None, 3)
+        if written != output_size:
+            raise ValueError(f"Oodle decompression returned {written} of {output_size} bytes.")
+        return output.raw
 
 
 def reference(data):

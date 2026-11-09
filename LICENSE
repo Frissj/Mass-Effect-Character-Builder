@@ -24,27 +24,24 @@ SOFTWARE.
 Third-party code and credits
 -------------------------------------------------------------------------------
 
-anthemtool/ (game archive reader: layout, TOC, superbundle and CAS parsing)
-  AnthemTool, https://github.com/xyrin88/anthemtool
-  Copyright (c) 2019 AnthemTool, MIT License (full text in anthemtool/LICENSE.md).
-  Included with local changes: a backtracking superbundle payload parser
-  (sb/bundle.py) and CAS file sizes (cas/cas.py).
+UE Viewer (Legendary Edition package and asset export, downloaded at run time)
+  https://www.gildor.org/en/projects/umodel
+  Copyright (c) 2007–2022 Konstantin Nosov (Gildor), MIT License.
+  The downloaded distribution includes its license.
 
 Python packages installed at run time (not distributed here):
-  numpy (BSD-3-Clause), Pillow (MIT-CMU), texture2ddecoder (MIT).
+  numpy (BSD-3-Clause), Pillow (MIT-CMU).
+
+The builder calls libraries already on the system or in the game install:
+  Microsoft's d3dcompiler_47.dll (shader disassembly) and the game's own
+  oo2core_8_win64.dll (package decompression).
 
 -------------------------------------------------------------------------------
 Game content
 -------------------------------------------------------------------------------
 
-Anthem is a trademark of Electronic Arts Inc.; the game and its assets are
-(c) Electronic Arts Inc. and BioWare. This repository contains no game files.
-The tool reads assets from a copy of the game you own; models, textures and
-animations it produces remain the property of their owners. This project is
+Mass Effect is a trademark of Electronic Arts Inc.; the games and their assets
+are (c) Electronic Arts Inc. and BioWare. This repository contains no game
+files. The tool reads assets from a copy of the game you own; models, textures
+and materials it produces remain the property of their owners. This project is
 not affiliated with or endorsed by Electronic Arts or BioWare.
-
-
-UE Viewer (Legendary Edition package and asset export, downloaded at run time)
-  https://www.gildor.org/en/projects/umodel
-  Copyright (c) 2007–2022 Konstantin Nosov (Gildor), MIT License.
-  The downloaded distribution includes its license.
